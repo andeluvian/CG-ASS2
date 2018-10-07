@@ -131,6 +131,38 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
     // We suggest you implement this function via a change of basis from
 	// B-spline to Bezier.  That way, you can just call your evalBezier function.
 
+	Mat4f base;
+	base.setRow(0, Vec4f((float)1 / 6, (float)-1 / 2, (float)1 / 2, (float)-1 / 6));
+	base.setRow(1, Vec4f((float)2 / 3, 0, (float)-1, (float)1 / 2));
+	base.setRow(2, Vec4f((float)1 / 6, (float)1 / 2, (float)1 / 2, (float)-1 / 2));
+	base.setRow(3, Vec4f(0, 0, 0, (float)1 / 6));
+
+	Curve C;
+	for (int j = 0; j + 3 < P.size(); j++)
+	{
+		Curve ConX(steps + 1);
+		for (int i = 0; i <= steps; i++)
+		{
+			float t = (float)i / (float)steps;
+
+			Mat4f mat;
+			mat.setCol(0, Vec4f(P[j], 0));
+			mat.setCol(1, Vec4f(P[j + 1], 0));
+			mat.setCol(2, Vec4f(P[j + 2], 0));
+			mat.setCol(3, Vec4f(P[j + 3], 0));
+			Vec4f testVec(1, t, t*t, t*t*t);
+
+			Mat4f final = mat * base;
+			Vec4f final2 = mat* base * testVec;
+
+			ConX[i].V = final2.getXYZ();
+
+		}
+		C.insert(C.begin(), ConX.begin(), ConX.end());
+	}
+
+
+
     cerr << "\t>>> evalBSpline has been called with the following input:" << endl;
 
     cerr << "\t>>> Control points (type vector< Vec3f >): "<< endl;
@@ -142,7 +174,7 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
     cerr << "\t>>> Returning empty curve." << endl;
 
     // Return an empty curve right now.
-    return Curve();
+    return C; //<<<<< kept forgetting this returned Curve(), i sat here thinking why my code keeps crashing!!! DAMN YOU!
 }
 
 Curve evalCircle(float radius, unsigned steps) {
