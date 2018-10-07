@@ -189,6 +189,38 @@ void MeshWithConnectivity::LoopSubdivision() {
 					// You will need to use the neighbor information to find the correct vertices and then combine the four corner vertices with the correct weights.
 					// Be sure to see section 3.2 in the handout for an in depth explanation of the neighbor index tables; the scheme is somewhat involved.
 					Vec3f pos, col, norm;
+					int Avertex, Bvertex;
+
+					if (j == 0)
+						Avertex = indices[i][2];
+					else if (j == 1)
+						Avertex = indices[i][0];
+					else
+						Avertex = indices[i][1];
+					Vec3i adjacent = neighborTris[i];
+					bool found = false;
+					for (int k = 0; k < 3; k++)
+					{
+						int kms = adjacent[k];
+
+						if (kms == -1)
+							continue;
+
+						int x = indices[kms][0], y = indices[kms][1], z = indices[kms][2];
+						if ((indices[kms][0] == v0 || indices[kms][1] == v0 || indices[kms][2] == v0) && (indices[kms][0] == v1 || indices[kms][1] == v1 || indices[kms][2] == v1))
+						{
+							if ((x == v0 && y == v1) || (x == v1 && y == v0))
+								Bvertex = z;
+							else if ((y == v0 && z == v1) || (z == v0 && y == v1))
+								Bvertex = x;
+							else
+								Bvertex = y;
+							found = true;
+							break;
+						}
+					}
+
+
 					// This default implementation just puts the new vertex at the edge midpoint.
 					pos = 0.5f * (positions[v0] + positions[v1]);
 					col = 0.5f * (colors[v0] + colors[v1]);
@@ -201,6 +233,7 @@ void MeshWithConnectivity::LoopSubdivision() {
 				// YOUR CODE HERE (R3):
 				// Map the edge to the correct vertex index.
 				// This is just one line! Use new_vertices and the index of the position that was just pushed back to the vector.
+				new_vertices[edge] = new_positions.size() - 1;
 				}
 			}
 	}
