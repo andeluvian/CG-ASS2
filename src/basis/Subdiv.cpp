@@ -267,7 +267,7 @@ void MeshWithConnectivity::LoopSubdivision() {
 
 			Vec3f pos, col, norm;
 			// YOUR CODE HERE (R5): reposition the old vertices
-
+			std::vector<int> adjacent;
 			// This default implementation just passes the data through unchanged.
 			// You need to replace these three lines with the loop over the 1-ring
 			// around vertex v0, and compute the new position as a weighted average
@@ -280,14 +280,41 @@ void MeshWithConnectivity::LoopSubdivision() {
 			// vertices with a visible color, so you can ensure that the 1-ring generated is correct.
 			// The solution exe implements this so you can see an example of what you can do with the
 			// highlight mode there.
-			pos = positions[v0];
-			col = colors[v0];
-			norm = normals[v0];
+			for (int k = 0; k < indices.size(); k++) {
+				for (int l = 0; l < 3; l++) {
+					if (indices[k][l] == v0) {
+						adjacent.push_back(indices[k][(l + 1) % 3]);
+						adjacent.push_back(indices[k][(l + 2) % 3]);
+					}
+				}
+			}
+			sort(adjacent.begin(), adjacent.end());
+			adjacent.erase(std::unique(adjacent.begin(), adjacent.end()), adjacent.end());
 
-
-			// Stop here if we're doing the debug pass since we don't actually need to modify the mesh
-			if (debugPass)
-				return;
+			int n = adjacent.size();
+			float b;
+			if (n>3)
+				b = 3.0f / (8.0f * n);
+			else if (n == 3)
+				b = 3.0f / 16.0f;
+			else
+				b = 0.0f;
+			Vec3f rightsum1, rightsum2, rightsum3;
+			for (int k = 0; k < adjacent.size(); k++) {
+				rightsum1 += positions[adjacent[k]];
+				rightsum2 += colors[adjacent[k]];
+				rightsum3 += normals[adjacent[k]];
+			}
+			rightsum1 *= (float)b;
+			rightsum2 *= (float)b;
+			rightsum3 *= (float)b;
+			float ks = 1.0f - (float)n*(float)b;
+			rightsum1 += ks * positions[v0];
+			rightsum2 += ks * colors[v0];
+			rightsum3 += ks * normals[v0];
+			pos = rightsum1;
+			col = rightsum2;
+			norm = rightsum3;
 
 			new_positions[v0] = pos;
 			new_colors[v0] = col;
@@ -295,10 +322,20 @@ void MeshWithConnectivity::LoopSubdivision() {
 		}
 	}
 
-	// Again, if we're doing the debug pass, we only care about our 1-ring so we can stop now
-	if (debugPass)
-		return;
+			// Stop here if we're doing the debug pass since we don't actually need to modify the mesh
+		/*	if (debugPass)
+				return;
 
+			new_positions[v0] = pos;
+			new_colors[v0] = col;
+			new_normals[v0] = norm;
+		}
+	}*/
+
+	// Again, if we're doing the debug pass, we only care about our 1-ring so we can stop now
+	/*if (debugPass)
+		return;
+		*/
 	// and then, finally, regenerate topology
 	// every triangle turns into four new ones
 	std::vector<Vec3i> new_indices;
