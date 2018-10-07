@@ -145,17 +145,17 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
 		{
 			float t = (float)i / (float)steps;
 
-			Mat4f mat;
-			mat.setCol(0, Vec4f(P[j], 0));
-			mat.setCol(1, Vec4f(P[j + 1], 0));
-			mat.setCol(2, Vec4f(P[j + 2], 0));
-			mat.setCol(3, Vec4f(P[j + 3], 0));
+			Mat4f a;
+			a.setCol(0, Vec4f(P[j], 0));
+			a.setCol(1, Vec4f(P[j + 1], 0));
+			a.setCol(2, Vec4f(P[j + 2], 0));
+			a.setCol(3, Vec4f(P[j + 3], 0));
 			Vec4f testVec(1, t, t*t, t*t*t);
 
-			Mat4f final = mat * base;
-			Vec4f final2 = mat* base * testVec;
+			Mat4f result = a * base;
+			Vec4f result2 = a* base * testVec;
 
-			ConX[i].V = final2.getXYZ();
+			ConX[i].V = result2.getXYZ();
 
 		}
 		C.insert(C.begin(), ConX.begin(), ConX.end());
@@ -174,7 +174,7 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
     cerr << "\t>>> Returning empty curve." << endl;
 
     // Return an empty curve right now.
-    return C; //<<<<< kept forgetting this returned Curve(), i sat here thinking why my code keeps crashing!!! DAMN YOU!
+    return C; 
 }
 
 Curve evalCircle(float radius, unsigned steps) {
