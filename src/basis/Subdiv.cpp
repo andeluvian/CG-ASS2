@@ -222,10 +222,17 @@ void MeshWithConnectivity::LoopSubdivision() {
 
 
 					// This default implementation just puts the new vertex at the edge midpoint.
-					pos = 0.5f * (positions[v0] + positions[v1]);
-					col = 0.5f * (colors[v0] + colors[v1]);
-					norm = 0.5f * (normals[v0] + normals[v1]);
+					if (found) {
+						pos = ((3.0f * (positions[v0] + positions[v1])) + (positions[Avertex] + positions[Bvertex])) / 8.0f;
+						col = ((3.0f * (colors[v0] + colors[v1])) + (colors[Avertex] + colors[Bvertex])) / 8.0f;
+						norm = ((3.0f * (normals[v0] + normals[v1])) + (normals[Avertex] + normals[Bvertex])) / 8.0f;
+					}
 
+					else {
+						pos = 0.5f * (positions[v0] + positions[v1]);
+						col = 0.5f * (colors[v0] + colors[v1]);
+						norm = 0.5f * (normals[v0] + normals[v1]);
+					}
 				new_positions.push_back(pos);
 				new_colors.push_back(col);
 				new_normals.push_back(norm);
@@ -304,14 +311,22 @@ void MeshWithConnectivity::LoopSubdivision() {
 		//auto edge_a = std::make_pair(min(X, Y), max(X, Y));
 		//auto edge_b = ...
 		//auto edge_c = ...
-
+		auto edge_a = std::make_pair(min(even.x, even.y), max(even.x, even.y));
+		auto edge_b = std::make_pair(min(even.z, even.y), max(even.z, even.y));
+		auto edge_c = std::make_pair(min(even.x, even.z), max(even.x, even.z));
 		// The edges edge_a, edge_b and edge_c now define the vertex indices via new_vertices.
 		// (The mapping is done in the loop above.)
 		// The indices define the smaller triangle inside the indices defined by "even", in order.
 		// Read the vertex indices out of new_vertices to build the small triangle "odd"
-
+		int a, b, c;
+		a = new_vertices[edge_a];
+		b = new_vertices[edge_b];
+		c = new_vertices[edge_c];
 		// Vec3i odd = ...
-
+		new_indices.push_back(Vec3i(a, b, c));
+		new_indices.push_back(Vec3i(a, b, even[1]));
+		new_indices.push_back(Vec3i(a, c, even[0]));
+		new_indices.push_back(Vec3i(b, c, even[2]));
 		// Then, construct the four smaller triangles from the surrounding big triangle  "even"
 		// and the inner one, "odd". Push them to "new_indices".
 
@@ -321,10 +336,10 @@ void MeshWithConnectivity::LoopSubdivision() {
 	}
 
 	// ADD THESE LINES when R3 is finished. Replace the originals with the repositioned data.
-	//indices = std::move(new_indices);
-	//positions = std::move(new_positions);
-	//normals = std::move(new_normals);
-	//colors = std::move(new_colors);
+	indices = std::move(new_indices);
+	positions = std::move(new_positions);
+	normals = std::move(new_normals);
+	colors = std::move(new_colors);
 }
 
 } // namespace FW
