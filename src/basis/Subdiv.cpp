@@ -331,7 +331,6 @@ void MeshWithConnectivity::LoopSubdivision() {
 			new_normals[v0] = norm;
 		}
 	}*/
-
 	// Again, if we're doing the debug pass, we only care about our 1-ring so we can stop now
 	/*if (debugPass)
 		return;
